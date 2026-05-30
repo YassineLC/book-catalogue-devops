@@ -84,6 +84,19 @@ class BookServiceTest {
     }
 
     @Test
+    void testSearchByTitle() {
+        Book book1 = new Book("Clean Code", 1L);
+        Book book2 = new Book("Clean Architecture", 1L);
+        when(bookRepository.findByTitleContainingIgnoreCase("clean"))
+                .thenReturn(Arrays.asList(book1, book2));
+
+        List<Book> results = bookService.searchByTitle("clean");
+
+        assertEquals(2, results.size());
+        verify(bookRepository, times(1)).findByTitleContainingIgnoreCase("clean");
+    }
+
+    @Test
     void testDeleteById() {
         doNothing().when(bookRepository).deleteById(1L);
 

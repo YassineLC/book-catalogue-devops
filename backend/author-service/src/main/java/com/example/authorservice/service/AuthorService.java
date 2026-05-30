@@ -24,6 +24,10 @@ public class AuthorService {
         return authorRepository.findById(id);
     }
 
+    public List<Author> searchByName(String name) {
+        return authorRepository.findByNameContainingIgnoreCase(name);
+    }
+
     public Author save(Author author) {
         return authorRepository.save(author);
     }

@@ -84,6 +84,19 @@ class AuthorServiceTest {
     }
 
     @Test
+    void testSearchByName() {
+        Author author1 = new Author("Robert C. Martin", "American");
+        Author author2 = new Author("Martin Fowler", "British");
+        when(authorRepository.findByNameContainingIgnoreCase("martin"))
+                .thenReturn(Arrays.asList(author1, author2));
+
+        List<Author> results = authorService.searchByName("martin");
+
+        assertEquals(2, results.size());
+        verify(authorRepository, times(1)).findByNameContainingIgnoreCase("martin");
+    }
+
+    @Test
     void testDeleteById() {
         doNothing().when(authorRepository).deleteById(1L);
 

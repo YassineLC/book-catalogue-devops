@@ -24,6 +24,10 @@ public class BookService {
         return bookRepository.findById(id);
     }
 
+    public List<Book> searchByTitle(String title) {
+        return bookRepository.findByTitleContainingIgnoreCase(title);
+    }
+
     public Book save(Book book) {
         return bookRepository.save(book);
     }
