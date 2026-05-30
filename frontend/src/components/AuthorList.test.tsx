@@ -1,40 +1,48 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { ThemeProvider } from '@mui/material';
 import AuthorList from './AuthorList';
+import theme from '../theme';
 
 const mockAuthors = [
   { id: 1, name: 'Robert C. Martin', nationality: 'American' },
   { id: 2, name: 'Martin Fowler', nationality: 'British' },
 ];
 
+function renderAuthorList() {
+  return render(
+    <ThemeProvider theme={theme}>
+      <AuthorList />
+    </ThemeProvider>
+  );
+}
+
+let mockFetch: ReturnType<typeof vi.fn>;
+
 beforeEach(() => {
-  global.fetch = vi.fn();
+  mockFetch = vi.fn();
+  vi.stubGlobal('fetch', mockFetch);
+});
+afterEach(() => { vi.unstubAllGlobals(); });
+
+test('renders auteurs heading', async () => {
+  mockFetch.mockResolvedValueOnce({ ok: true, json: async () => [] });
+
+  renderAuthorList();
+  expect(screen.getByText('Auteurs')).toBeInTheDocument();
 });
 
-afterEach(() => {
-  vi.restoreAllMocks();
-});
+test('renders add author button', async () => {
+  mockFetch.mockResolvedValueOnce({ ok: true, json: async () => [] });
 
-test('renders author table headers', async () => {
-  (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-    ok: true,
-    json: async () => [],
-  });
-
-  render(<AuthorList />);
-
-  expect(screen.getByRole('columnheader', { name: /^id$/i })).toBeInTheDocument();
-  expect(screen.getByRole('columnheader', { name: /^name$/i })).toBeInTheDocument();
-  expect(screen.getByRole('columnheader', { name: /nationality/i })).toBeInTheDocument();
+  renderAuthorList();
+  expect(screen.getByRole('button', { name: /ajouter un auteur/i })).toBeInTheDocument();
 });
 
 test('displays authors fetched from API', async () => {
-  (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-    ok: true,
-    json: async () => mockAuthors,
-  });
+  mockFetch.mockResolvedValueOnce({ ok: true, json: async () => mockAuthors });
 
-  render(<AuthorList />);
+  renderAuthorList();
 
   await waitFor(() => {
     expect(screen.getByText('Robert C. Martin')).toBeInTheDocument();
@@ -42,40 +50,41 @@ test('displays authors fetched from API', async () => {
   });
 });
 
-test('renders add author form', async () => {
-  (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-    ok: true,
-    json: async () => [],
+test('displays nationality chips', async () => {
+  mockFetch.mockResolvedValueOnce({ ok: true, json: async () => mockAuthors });
+
+  renderAuthorList();
+
+  await waitFor(() => {
+    expect(screen.getByText('American')).toBeInTheDocument();
+    expect(screen.getByText('British')).toBeInTheDocument();
   });
-
-  render(<AuthorList />);
-
-  expect(screen.getByRole('textbox', { name: /name/i })).toBeInTheDocument();
-  expect(screen.getByRole('textbox', { name: /nationality/i })).toBeInTheDocument();
-  expect(screen.getByRole('button', { name: /add author/i })).toBeInTheDocument();
 });
 
-test('adds a new author on form submit', async () => {
-  const newAuthor = { id: 3, name: 'Kent Beck', nationality: 'American' };
-  (global.fetch as ReturnType<typeof vi.fn>)
-    .mockResolvedValueOnce({ ok: true, json: async () => mockAuthors })
-    .mockResolvedValueOnce({ ok: true, json: async () => newAuthor });
+test('opens add dialog on button click', async () => {
+  mockFetch.mockResolvedValueOnce({ ok: true, json: async () => [] });
 
-  render(<AuthorList />);
+  renderAuthorList();
+  await userEvent.click(screen.getByRole('button', { name: /ajouter un auteur/i }));
+  expect(screen.getByText('Nouvel auteur')).toBeInTheDocument();
+});
 
+test('filters authors by search query', async () => {
+  mockFetch.mockResolvedValueOnce({ ok: true, json: async () => mockAuthors });
+
+  renderAuthorList();
   await waitFor(() => expect(screen.getByText('Robert C. Martin')).toBeInTheDocument());
 
-  await userEvent.type(screen.getByRole('textbox', { name: /name/i }), 'Kent Beck');
-  await userEvent.type(screen.getByRole('textbox', { name: /nationality/i }), 'American');
-  await userEvent.click(screen.getByRole('button', { name: /add author/i }));
+  await userEvent.type(screen.getByPlaceholderText(/rechercher par nom/i), 'fowler');
 
-  await waitFor(() => expect(screen.getByText('Kent Beck')).toBeInTheDocument());
+  expect(screen.getByText('Martin Fowler')).toBeInTheDocument();
+  expect(screen.queryByText('Robert C. Martin')).not.toBeInTheDocument();
 });
 
 test('handles fetch error gracefully', async () => {
-  (global.fetch as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error('Network error'));
+  mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
-  render(<AuthorList />);
+  renderAuthorList();
 
   await waitFor(() => {
     expect(screen.queryByText('Robert C. Martin')).not.toBeInTheDocument();
