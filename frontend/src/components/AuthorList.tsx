@@ -12,7 +12,7 @@ import AddIcon from '@mui/icons-material/Add';
 import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline';
 import PublicIcon from '@mui/icons-material/Public';
 
-const AUTHORS_API = 'http://localhost:8082';
+const AUTHORS_API = '';
 
 interface Author { id: number; name: string; nationality: string; }
 interface Snack { open: boolean; message: string; severity: 'success' | 'error'; }

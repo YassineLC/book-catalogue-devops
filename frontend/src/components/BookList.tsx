@@ -12,8 +12,8 @@ import AddIcon from '@mui/icons-material/Add';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 
-const BOOKS_API = 'http://localhost:8081';
-const AUTHORS_API = 'http://localhost:8082';
+const BOOKS_API = '';
+const AUTHORS_API = '';
 
 interface Book { id: number; title: string; authorId: number; }
 interface Author { id: number; name: string; nationality: string; }
