@@ -32,11 +32,11 @@ jobs:
 
       - name: Test book-service
         working-directory: ./backend/book-service
-        run: ./gradlew clean test jacocoTestReport
+        run: ./gradlew clean test jacocoTestReport classes
 
       - name: Test author-service
         working-directory: ./backend/author-service
-        run: ./gradlew clean test jacocoTestReport
+        run: ./gradlew clean test jacocoTestReport classes
 
       - name: Install frontend dependencies
         working-directory: ./frontend
